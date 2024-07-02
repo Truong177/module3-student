@@ -41,7 +41,7 @@ public class StudentControllers extends HttpServlet {
     }
 
     private void editShowForm(HttpServletRequest req, HttpServletResponse resp) {
-        int id = Integer.parseInt(req.getParameter("id"));
+        long id = Long.parseLong(req.getParameter("id"));
         Student student = studentService.findById(id);
         RequestDispatcher dispatcher;
         req.setAttribute("customer", student);
