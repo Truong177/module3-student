@@ -40,17 +40,13 @@ public class StudentControllers extends HttpServlet {
         }
     }
 
-    private void editShowForm(HttpServletRequest req, HttpServletResponse resp) {
+    private void editShowForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         long id = Long.parseLong(req.getParameter("id"));
         Student student = studentService.findById(id);
         RequestDispatcher dispatcher;
-        req.setAttribute("customer", student);
+        req.setAttribute("student", student);
         dispatcher = req.getRequestDispatcher("student/edit.jsp");
-        try {
-            dispatcher.forward(req, resp);
-        } catch (ServletException | IOException e) {
-            e.printStackTrace();
-        }
+        dispatcher.forward(req, resp);
     }
 
     @Override
@@ -61,78 +57,87 @@ public class StudentControllers extends HttpServlet {
         }
         switch (action) {
             case "create":
-                String studentName = req.getParameter("name");
-                String address = req.getParameter("address");
-                Float point = null;
-                if (req.getParameter("point") != null) {
-                    try {
-                        point = Float.parseFloat(req.getParameter("point"));
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (studentName != null && address != null && point != null) {
-                    Student student = new Student(studentName, address, point);
-                    studentService.save(student);
-                } else {
-                    req.setAttribute("message", "Thông tin không hợp lệ. Vui lòng điền đầy đủ các trường.");
-                }
-                resp.sendRedirect(req.getContextPath() + "/student");
+                createStudent(req, resp);
                 break;
             case "delete":
-                Long studentId = null;
-                if (req.getParameter("id") != null) {
-                    try {
-                        studentId = Long.parseLong(req.getParameter("id"));
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (studentId != null) {
-                    boolean isDeleted = studentService.deleteById(studentId);
-                    if (!isDeleted) {
-                        req.setAttribute("message", "Xóa không thành công.");
-                    }
-                } else {
-                    req.setAttribute("message", "ID không hợp lệ.");
-                }
-                resp.sendRedirect(req.getContextPath() + "/student");
+                deleteStudent(req, resp);
                 break;
             case "search":
-                String search = req.getParameter("search");
-                List<Student> students = studentService.findByName(search);
-                req.setAttribute("students", students);
-                req.getRequestDispatcher("/student/list.jsp").forward(req, resp);
+                searchStudent(req, resp);
                 break;
             case "edit":
                 updateStudent(req, resp);
+                break;
             default:
                 resp.sendRedirect(req.getContextPath() + "/student");
                 break;
         }
     }
 
-    private void updateStudent(HttpServletRequest req, HttpServletResponse resp) {
-            long id = Long.parseLong(req.getParameter("id"));
-            String name = req.getParameter("name");
-            String address = req.getParameter("address");
-            Float point = Float.parseFloat(req.getParameter("point"));
-            Student student = studentService.findById(id);
-            if (student != null) {
-                student.setName(name);
-                student.setAddress(address);
-                student.setPoint(point);
-                studentService.update(id, student);
-                req.setAttribute("student", student);
-                req.setAttribute("message", "Cập nhật thành công");
-                RequestDispatcher dispatcher = req.getRequestDispatcher("student/edit.jsp");
-                try {
-                    dispatcher.forward(req, resp);
-                } catch (ServletException | IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                req.setAttribute("message", "Sinh viên không tồn tại");
+    private void createStudent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String studentName = req.getParameter("name");
+        String address = req.getParameter("address");
+        Float point = null;
+        if (req.getParameter("point") != null) {
+            try {
+                point = Float.parseFloat(req.getParameter("point"));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
             }
+        }
+        if (studentName != null && address != null && point != null) {
+            Student student = new Student(studentName, address, point);
+            studentService.save(student);
+        } else {
+            req.setAttribute("message", "Thông tin không hợp lệ. Vui lòng điền đầy đủ các trường.");
+        }
+        resp.sendRedirect(req.getContextPath() + "/student");
+    }
+
+    private void deleteStudent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Long studentId = null;
+        if (req.getParameter("id") != null) {
+            try {
+                studentId = Long.parseLong(req.getParameter("id"));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        if (studentId != null) {
+            boolean isDeleted = studentService.deleteById(studentId);
+            if (!isDeleted) {
+                req.setAttribute("message", "Xóa không thành công.");
+            }
+        } else {
+            req.setAttribute("message", "ID không hợp lệ.");
+        }
+        resp.sendRedirect(req.getContextPath() + "/student");
+    }
+
+    private void searchStudent(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String search = req.getParameter("search");
+        List<Student> students = studentService.findByName(search);
+        req.setAttribute("students", students);
+        req.getRequestDispatcher("/student/list.jsp").forward(req, resp);
+    }
+
+    private void updateStudent(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        long id = Long.parseLong(req.getParameter("id"));
+        String name = req.getParameter("name");
+        String address = req.getParameter("address");
+        Float point = Float.parseFloat(req.getParameter("point"));
+        Student student = studentService.findById(id);
+        if (student != null) {
+            student.setName(name);
+            student.setAddress(address);
+            student.setPoint(point);
+            studentService.update(id, student);
+            req.setAttribute("student", student);
+            req.setAttribute("message", "Cập nhật thành công");
+            RequestDispatcher dispatcher = req.getRequestDispatcher("student/edit.jsp");
+            dispatcher.forward(req, resp);
+        } else {
+            req.setAttribute("message", "Sinh viên không tồn tại");
+        }
     }
 }
