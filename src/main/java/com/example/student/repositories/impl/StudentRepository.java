@@ -1,5 +1,6 @@
 package com.example.student.repositories.impl;
 
+import com.example.student.dto.StudentDTO;
 import com.example.student.models.Student;
 import com.example.student.repositories.IStudentRepository;
 
@@ -12,17 +13,18 @@ import java.util.List;
 public class StudentRepository implements IStudentRepository {
 
     @Override
-    public List<Student> findAll() {
-        List<Student> students = new ArrayList<>();
+    public List<StudentDTO> findAll() {
+        List<StudentDTO> students = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = BaseRepository.getConnection().prepareStatement("SELECT * FROM student");
+            PreparedStatement preparedStatement = BaseRepository.getConnection().prepareStatement("SELECT id,student.name,address,point,classroom.name_classroom from student join classroom on student.id_class = classroom.id_class");
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Long id = resultSet.getLong("id");
                 String name = resultSet.getString("name");
                 String address = resultSet.getString("address");
                 Float point = resultSet.getFloat("point");
-                students.add(new Student(id, name, address, point));
+                String name_classroom = resultSet.getString("name_classroom");
+                students.add(new StudentDTO(id, name, address, point,name_classroom));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -34,10 +36,11 @@ public class StudentRepository implements IStudentRepository {
     public void save(Student student) {
         try {
             PreparedStatement preparedStatement = BaseRepository.getConnection()
-                    .prepareStatement("INSERT INTO student (name, address, point) VALUES (?, ?, ?)");
+                    .prepareStatement("INSERT INTO student (name, address, point,id_class) VALUES (?, ?, ?,?)");
             preparedStatement.setString(1, student.getName());
             preparedStatement.setString(2, student.getAddress());
             preparedStatement.setFloat(3, student.getPoint());
+            preparedStatement.setLong(4,student.getIdClass());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -59,8 +62,8 @@ public class StudentRepository implements IStudentRepository {
     }
 
     @Override
-    public List<Student> findByName(String name) {
-        List<Student> result = new ArrayList<>();
+    public List<StudentDTO> findByName(String name) {
+        List<StudentDTO> result = new ArrayList<>();
         try {
             PreparedStatement preparedStatement = BaseRepository.getConnection()
                     .prepareStatement("SELECT * FROM student WHERE name LIKE ?");
@@ -71,7 +74,8 @@ public class StudentRepository implements IStudentRepository {
                 String studentName = resultSet.getString("name");
                 String address = resultSet.getString("address");
                 Float point = resultSet.getFloat("point");
-                result.add(new Student(id, studentName, address, point));
+                String name_classroom = resultSet.getString("id_class");
+                result.add(new StudentDTO(id,studentName,address,point,name_classroom));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

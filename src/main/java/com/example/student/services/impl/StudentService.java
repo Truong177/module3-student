@@ -2,6 +2,7 @@ package com.example.student.services.impl;
 
 
 
+import com.example.student.dto.StudentDTO;
 import com.example.student.models.Student;
 import com.example.student.repositories.IStudentRepository;
 import com.example.student.repositories.impl.StudentRepository;
@@ -14,7 +15,7 @@ public class StudentService implements IStudentService {
     private static IStudentRepository studentRepository = new StudentRepository();
 
     @Override
-    public List<Student> findAll() {
+    public List<StudentDTO> findAll() {
         return studentRepository.findAll();
     }
 
@@ -29,7 +30,7 @@ public class StudentService implements IStudentService {
     }
 
     @Override
-    public List<Student> findByName(String name) {
+    public List<StudentDTO> findByName(String name) {
         return studentRepository.findByName(name);
     }
 
