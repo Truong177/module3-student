@@ -84,18 +84,19 @@ public class StudentController extends HttpServlet {
         }
     }
 
-    private void createStudent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    private void createStudent(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String studentName = req.getParameter("name");
         String address = req.getParameter("address");
         Float point = Float.parseFloat(req.getParameter("point"));
         Long idClass = Long.valueOf(req.getParameter("classroom"));
-        if (studentName != null && address != null && point != null) {
+        if (studentName != null && address != null && point != null && idClass != null) {
             Student student = new Student(studentName, address, point, idClass);
             studentService.save(student);
+            resp.sendRedirect(req.getContextPath() + "/student");
         } else {
             req.setAttribute("message", "Thông tin không hợp lệ. Vui lòng điền đầy đủ các trường.");
+            req.getRequestDispatcher("/student/create.jsp").forward(req, resp);
         }
-        resp.sendRedirect(req.getContextPath() + "/student");
     }
 
     private void deleteStudent(HttpServletRequest req, HttpServletResponse resp) throws IOException {

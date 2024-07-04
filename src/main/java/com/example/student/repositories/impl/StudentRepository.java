@@ -16,15 +16,15 @@ public class StudentRepository implements IStudentRepository {
     public List<StudentDTO> findAll() {
         List<StudentDTO> students = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = BaseRepository.getConnection().prepareStatement("SELECT id,student.name,address,point,classroom.name_classroom from student join classroom on student.id_class = classroom.id_class");
+            PreparedStatement preparedStatement = BaseRepository.getConnection().prepareStatement("SELECT student.id, student.name, student.address, student.point, classroom.name_classroom FROM student JOIN classroom ON student.id_class = classroom.id_class");
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Long id = resultSet.getLong("id");
                 String name = resultSet.getString("name");
                 String address = resultSet.getString("address");
                 Float point = resultSet.getFloat("point");
-                String name_classroom = resultSet.getString("name_classroom");
-                students.add(new StudentDTO(id, name, address, point,name_classroom));
+                String nameClassroom = resultSet.getString("name_classroom");
+                students.add(new StudentDTO(id, name, address, point, nameClassroom));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -36,11 +36,11 @@ public class StudentRepository implements IStudentRepository {
     public void save(Student student) {
         try {
             PreparedStatement preparedStatement = BaseRepository.getConnection()
-                    .prepareStatement("INSERT INTO student (name, address, point,id_class) VALUES (?, ?, ?,?)");
+                    .prepareStatement("INSERT INTO student (name, address, point, id_class) VALUES (?, ?, ?, ?)");
             preparedStatement.setString(1, student.getName());
             preparedStatement.setString(2, student.getAddress());
             preparedStatement.setFloat(3, student.getPoint());
-            preparedStatement.setLong(4,student.getIdClass());
+            preparedStatement.setLong(4, student.getIdClass());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -49,16 +49,16 @@ public class StudentRepository implements IStudentRepository {
 
     @Override
     public Boolean deleteById(Long id) {
-        boolean isDelete;
+        boolean isDeleted;
         try {
             PreparedStatement statement = BaseRepository.getConnection()
                     .prepareStatement("DELETE FROM student WHERE id=?");
             statement.setLong(1, id);
-            isDelete = statement.executeUpdate() > 0;
+            isDeleted = statement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return isDelete;
+        return isDeleted;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class StudentRepository implements IStudentRepository {
         List<StudentDTO> result = new ArrayList<>();
         try {
             PreparedStatement preparedStatement = BaseRepository.getConnection()
-                    .prepareStatement("SELECT * FROM student WHERE name LIKE ?");
+                    .prepareStatement("SELECT student.id, student.name, student.address, student.point, classroom.name_classroom FROM student JOIN classroom ON student.id_class = classroom.id_class WHERE student.name LIKE ?");
             preparedStatement.setString(1, "%" + name + "%");
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -74,8 +74,8 @@ public class StudentRepository implements IStudentRepository {
                 String studentName = resultSet.getString("name");
                 String address = resultSet.getString("address");
                 Float point = resultSet.getFloat("point");
-                String name_classroom = resultSet.getString("id_class");
-                result.add(new StudentDTO(id,studentName,address,point,name_classroom));
+                String nameClassroom = resultSet.getString("name_classroom");
+                result.add(new StudentDTO(id, studentName, address, point, nameClassroom));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -95,7 +95,8 @@ public class StudentRepository implements IStudentRepository {
                 String name = resultSet.getString("name");
                 String address = resultSet.getString("address");
                 Float point = resultSet.getFloat("point");
-                student = new Student(id, name, address, point);
+                Long idClass = resultSet.getLong("id_class");
+                student = new Student(id, name, address, point, idClass);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -107,11 +108,12 @@ public class StudentRepository implements IStudentRepository {
     public void update(long id, Student student) {
         try {
             PreparedStatement preparedStatement = BaseRepository.getConnection()
-                    .prepareStatement("UPDATE student SET name=?, address=?, point=? WHERE id=?");
+                    .prepareStatement("UPDATE student SET name = ?, address = ?, point = ?, id_class = ? WHERE id = ?");
             preparedStatement.setString(1, student.getName());
             preparedStatement.setString(2, student.getAddress());
             preparedStatement.setFloat(3, student.getPoint());
-            preparedStatement.setLong(4, id);
+            preparedStatement.setLong(4, student.getIdClass());
+            preparedStatement.setLong(5, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
